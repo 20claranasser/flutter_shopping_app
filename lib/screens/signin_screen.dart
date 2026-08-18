@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
+import '../main.dart';
 
 class SigninScreen extends StatefulWidget {
   const SigninScreen({super.key});
+
   @override
   State<SigninScreen> createState() => _SigninScreenState();
 }
@@ -11,8 +14,37 @@ class _SigninScreenState extends State<SigninScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+
     return Scaffold(
-      appBar: AppBar(title: const Text("Fashion Login"), backgroundColor: Colors.deepPurple, foregroundColor: Colors.white),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.language, color: Colors.red),
+            onPressed: () {
+              if (Localizations.localeOf(context).languageCode == 'ar') {
+                FashionApp.of(context)?.setLocale(const Locale('en'));
+              } else {
+                FashionApp.of(context)?.setLocale(const Locale('ar'));
+              }
+            },
+          ),
+          IconButton(
+            icon: Icon(
+              theme.brightness == Brightness.dark ? Icons.light_mode : Icons.dark_mode,
+              color: Colors.red,
+            ),
+            onPressed: () {
+              FashionApp.of(context)?.setThemeMode(
+                theme.brightness == Brightness.dark ? ThemeMode.light : ThemeMode.dark,
+              );
+            },
+          ),
+        ],
+      ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Form(
@@ -20,43 +52,63 @@ class _SigninScreenState extends State<SigninScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text("Welcome Back", style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+              Text(
+                l10n.signIn,
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.primary,
+                ),
+              ),
               const SizedBox(height: 30),
+
               TextFormField(
-                decoration: const InputDecoration(labelText: "Email", border: OutlineInputBorder()),
-                validator: (value) => (value != null && value.contains('@')) ? null : "Must include @",
+                decoration: InputDecoration(
+                  labelText: l10n.email,
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.email_outlined),
+                ),
+                keyboardType: TextInputType.emailAddress,
+                validator: (val) {
+                  final bool emailValid = RegExp(
+                    r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+",
+                  ).hasMatch(val ?? "");
+                  if (val == null || val.isEmpty) return "Required";
+                  if (!emailValid) return "Enter valid email";
+                  return null;
+                },
               ),
               const SizedBox(height: 15),
+
               TextFormField(
                 obscureText: true,
-                decoration: const InputDecoration(labelText: "Password", border: OutlineInputBorder()),
-                validator: (value) => (value != null && value.length >= 6) ? null : "At least 6 characters",
+                decoration: InputDecoration(
+                  labelText: l10n.password,
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.lock_outline),
+                ),
+                validator: (val) => (val != null && val.length < 6) ? "Min 6 characters" : null,
               ),
               const SizedBox(height: 30),
+
               ElevatedButton(
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
-                    showDialog(
-                      context: context,
-                      builder: (ctx) => AlertDialog(
-                        title: const Text("Success"),
-                        content: const Text("Account sign-in successfully"),
-                        actions: [
-                          TextButton(onPressed: () => Navigator.pushReplacementNamed(context, '/home'), child: const Text("Close"))
-                        ],
-                      ),
-                    );
+                    Navigator.pushReplacementNamed(context, '/main');
                   }
                 },
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.deepPurple, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15)),
-                child: const Text("Sign In"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: theme.colorScheme.primary,
+                  foregroundColor: theme.colorScheme.onPrimary,
+                  minimumSize: const Size(double.infinity, 50),
+                ),
+                child: Text(l10n.signIn),
               ),
-
-              // --- NEW BUTTON ADDED HERE ---
               const SizedBox(height: 10),
+
               TextButton(
                 onPressed: () => Navigator.pushReplacementNamed(context, '/signup'),
-                child: const Text("Don't have an account? Sign Up", style: TextStyle(color: Colors.pinkAccent)),
+                child: Text(l10n.register),
               ),
             ],
           ),
